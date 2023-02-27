@@ -5,6 +5,8 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
+f = open("output.txt", "w")
+
 # For static images:
 IMAGE_FILES = []
 BG_COLOR = (192, 192, 192) # gray
@@ -47,11 +49,13 @@ with mp_pose.Pose(
         results.pose_world_landmarks, mp_pose.POSE_CONNECTIONS)
 
 # For webcam input:
+n=0 #for print each frame
 cap = cv2.VideoCapture("video.mp4")
 with mp_pose.Pose(
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5) as pose:
   while cap.isOpened():
+    n+=1 # for print each frame
     success, image = cap.read()
     if not success:
       print("Ignoring empty camera frame.")
@@ -63,6 +67,11 @@ with mp_pose.Pose(
     image.flags.writeable = False
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     results = pose.process(image)
+    #print(results.pose_landmarks , "n = " ,n) #for coordonate each frame
+    #f.write(str(results.pose_landmarks.landmark[11]) + "n = " + str(n) + '\n' + '\n') #for coordonate each frame in output file /// [11] = landmark id
+
+    for i in range(0, len(results.pose_landmarks.landmark)) :
+      f.write(f"coordonate of element index {i} is \n{results.pose_landmarks.landmark[i]}frame = {n} \n\n")
 
     # Draw the pose annotation on the image.
     image.flags.writeable = True
@@ -78,4 +87,5 @@ with mp_pose.Pose(
     #cv2.imshow('MediaPipe Pose', image) just to display video normal
     if cv2.waitKey(5) & 0xFF == 27:
       break
+f.close()
 cap.release()
