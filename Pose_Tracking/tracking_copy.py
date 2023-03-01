@@ -1,11 +1,36 @@
 import cv2
 import mediapipe as mp
 import numpy as np
+from mediapipe.python.solutions.pose import PoseLandmark
+from mediapipe.python.solutions.drawing_utils import DrawingSpec
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
 f = open("output.txt", "w")
+
+excluded_landmarks = [
+    PoseLandmark.LEFT_EYE, 
+    PoseLandmark.RIGHT_EYE, 
+    PoseLandmark.LEFT_EYE_INNER, 
+    PoseLandmark.RIGHT_EYE_INNER, 
+    PoseLandmark.LEFT_EAR,
+    PoseLandmark.RIGHT_EAR,
+    PoseLandmark.LEFT_EYE_OUTER,
+    PoseLandmark.RIGHT_EYE_OUTER,
+    PoseLandmark.NOSE,
+    PoseLandmark.MOUTH_LEFT,
+    PoseLandmark.MOUTH_RIGHT ]
+
+custom_style = mp_drawing_styles.get_default_pose_landmarks_style()
+custom_connections = list(mp_pose.POSE_CONNECTIONS)
+
+for landmark in excluded_landmarks:
+    # we change the way the excluded landmarks are drawn
+    custom_style[landmark] = DrawingSpec(color=(0,0,0), thickness=None) 
+    # we remove all connections which contain these landmarks
+    custom_connections = [connection_tuple for connection_tuple in custom_connections 
+                            if landmark.value not in connection_tuple]
 
 # For static images:
 IMAGE_FILES = []
@@ -39,10 +64,10 @@ with mp_pose.Pose(
     annotated_image = np.where(condition, annotated_image, bg_image)
     # Draw pose landmarks on the image.
     mp_drawing.draw_landmarks(
-        annotated_image,
-        results.pose_landmarks,
-        mp_pose.POSE_CONNECTIONS,
-        landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+      annotated_image,
+      results.pose_landmarks,
+      connections = custom_connections, #  passing the modified connections list
+      landmark_drawing_spec=custom_style) # and drawing style 
     cv2.imwrite('/tmp/annotated_image' + str(idx) + '.png', annotated_image)
     # Plot pose world landmarks.
     mp_drawing.plot_landmarks(
@@ -80,10 +105,10 @@ with mp_pose.Pose(
     mp_drawing.draw_landmarks(
         image,
         results.pose_landmarks,
-        mp_pose.POSE_CONNECTIONS,
-        landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+        connections = custom_connections, #  passing the modified connections list
+        landmark_drawing_spec=custom_style) # and drawing style 
     # Flip the image horizontally for a selfie-view display.
-    cv2.imshow('MediaPipe Pose', cv2.flip(image, 1))
+    cv2.imshow('landmarks', cv2.flip(image, 1))
     #cv2.imshow('MediaPipe Pose', image) just to display video normal
     if cv2.waitKey(5) & 0xFF == 27:
       break
