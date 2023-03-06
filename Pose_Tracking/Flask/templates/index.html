@@ -10,4 +10,13 @@
         <a href="{{ url_for('edit', id = post.id)}}">edit</a>
         <hr>
     {% endfor %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8  offset-lg-2">
+                <h3 class="mt-5">Live Streaming</h3>
+                <img src="{{ url_for('video') }}" width="100%">
+            </div>
+        </div>
+    </div>
 {% endblock %}
