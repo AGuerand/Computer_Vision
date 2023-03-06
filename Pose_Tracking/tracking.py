@@ -72,6 +72,7 @@ with mp_pose.Pose(
     if results.pose_landmarks != None :
       for i in range(0, len(results.pose_landmarks.landmark)) :
         f.write(f"coordonate of element index {i} is \n{results.pose_landmarks.landmark[i]}frame = {n} \n\n")
+        f.flush()
 
     # Draw the pose annotation on the image.
     image.flags.writeable = True
